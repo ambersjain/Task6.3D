@@ -8,14 +8,45 @@ const base = `${__dirname}/views`;
 const https = require("https");
 //To hash the password
 const bcrypt = require('bcrypt');
+// For Google Auth
+const passport = require('passport');
+const session = require('express-session');
 
+
+
+// User Model
+const User = require("./models/user");
+const { EEXIST } = require('constants');
+
+// Worker Model
+const Worker = require("./models/worker");
+
+//use Google auth in app
+/*
+ Set the session up for authentication, order is important
+*/
+app.use(session({
+  cookie:{maxAge:12000},
+  resave:false,
+  saveUninitialized:false,
+  secret:'secret'
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(User.createStrategy())
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 // Body parser middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // //Database connection using mongoose
 const mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost:27017/iCrowdTaskDB", { useNewUrlParser: true })
+// This keeps away the warning
+mongoose.set('useCreateIndex', true);
+// This craetes and connects to the db
+mongoose.connect("mongodb://localhost:27017/iCrowdTaskDB", { useNewUrlParser: true ,  useUnifiedTopology: true })
 let db = mongoose.connection;
 
 // Check for DB errors
@@ -28,12 +59,6 @@ db.once('open', function () {
   console.log('Connected to MongoDB');
 })
 
-// User Model
-const User = require("./models/user");
-const { EEXIST } = require('constants');
-
-// Worker Model
-const Worker = require("./models/worker");
 
 // Need to use this to be able to use views folder
 app.use(express.static('views'));
@@ -74,7 +99,7 @@ app.post('/', (req, res) => {
 
   //hashing password before storing in db
   const hashedPass = bcrypt.hashSync(req.body.password, 10);
-  const user = new User.User(
+  const user = new User(
     {
       country: req.body.country,
       first_name: req.body.first_name,
@@ -130,7 +155,6 @@ app.post('/', (req, res) => {
         })
         request.write(jsonData);
         request.end();
-
       }
     })
   }
@@ -142,7 +166,7 @@ app.post('/', (req, res) => {
 
 //Login
 app.post('/signin', (req, res) => {
-  User.User.findOne({ email: req.body.email }, (err, user) => {
+  User.findOne({ email: req.body.email }, (err, user) => {
     if (err) {
       console.log(err);
       return res.status(500).send();
@@ -181,14 +205,14 @@ app.post('/signin', (req, res) => {
 
 app.route('/workers')
   .get((req, res) => {
-    Worker.Worker.find((err, workerList) => {
+    Worker.find((err, workerList) => {
       if (err) { res.send(err) }
       else { res.send(workerList) }
     })
 
   })
   .post((req, res) => {
-    const worker = new Worker.Worker({
+    const worker = new Worker({
       id: req.body.id,
       name: req.body.name,
       email: req.body.email,
@@ -203,7 +227,7 @@ app.route('/workers')
     })
   })
   .delete((req, res) => {
-    Worker.Worker.deleteMany((err) => {
+    Worker.deleteMany((err) => {
       if (err) { res.send(err) }
       else { res.send("Successfully deleted all worker records!") }
     })
@@ -220,13 +244,13 @@ app.route('/workers')
 */
 app.route('/workers/:id')
   .get((req, res) => {
-    Worker.Worker.findOne({ id: req.params.id }, (err, foundWorker) => {
+    Worker.findOne({ id: req.params.id }, (err, foundWorker) => {
       if (foundWorker) { res.send(foundWorker) }
       else { res.send("Worker not found.") }
     })
   })
   .put((req, res) => {
-    Worker.Worker.update(
+    Worker.update(
       { id: req.params.id },
       {
         name: req.body.name,
@@ -243,13 +267,13 @@ app.route('/workers/:id')
     )
   })
   .delete((req, res) => {
-    Worker.Worker.deleteOne({ id: req.params.id }, (err, foundWorker) => {
+    Worker.deleteOne({ id: req.params.id }, (err, foundWorker) => {
       if (foundWorker) { res.send(foundWorker) }
       else { res.send("Worker account not deleted") }
     })
   })
   .patch((req, res) => {
-    Worker.Worker.update(
+    Worker.update(
       { id: req.params.id },
       { $set: req.body },
       { overwrite: true },
