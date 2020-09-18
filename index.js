@@ -2,9 +2,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const port = 8080;
-// For Google Auth
-const passport = require('passport');
 const session = require('express-session');
+
+// For Google Auth
+
+// const passport = require('passport');
+// const session = require('express-session');
 
 //getting the worker routes
 const workerRoutes = require('./routes/worker-routes');
@@ -12,7 +15,13 @@ const workerRoutes = require('./routes/worker-routes');
 //getting the user routes
 const userRoutes = require('./routes/user-routes');
 
+//getting the profile routes
+const profileRoutes = require('./routes/profile-routes');
+
 const { EEXIST } = require('constants');
+const passport = require('passport');
+
+
 
 //use Google auth in app
 /*
@@ -27,12 +36,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// passport.use(User.createStrategy())
-// passport.serializeUser(User.serializeUser());
-// passport.deserializeUser(User.deserializeUser());
-
 // Body parser middleware
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 // //Database connection using mongoose
 const mongoose = require("mongoose");
@@ -60,6 +66,9 @@ app.use(workerRoutes);
 
 // Use the user routes
 app.use(userRoutes);
+
+// Use the profile routes
+app.use('/profile', profileRoutes);
 
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
