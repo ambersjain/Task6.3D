@@ -4,7 +4,6 @@
 <head>
   <meta charset="utf-8">
   <meta name="google-signin-client_id" content="YOUR_CLIENT_ID.apps.googleusercontent.com">
-
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <title>iCrowdTask SignIn</title>
@@ -28,7 +27,7 @@
           <article class="card-body">
             <a href="/" class="float-right btn btn-outline-primary">Sign up</a>
             <h4 class="card-title mb-4 mt-1">Sign in</h4>
-            <form method = 'POST' action='/signin'>
+            <form method='POST' action='/signin'>
               <div class="form-group">
                 <label>Your email</label>
                 <input name="email" class="form-control" placeholder="Email" type="email">
@@ -36,7 +35,7 @@
               <div class="form-group">
                 <a class="float-right" href="#">Forgot?</a>
                 <label>Your password</label>
-                <input name = "passwordlogin" class="form-control" placeholder="******" type="password">
+                <input name="passwordlogin" class="form-control" placeholder="******" type="password">
               </div> <!-- form-group// -->
               <div class="form-group">
                 <div class="checkbox">
@@ -46,10 +45,32 @@
               <div class="form-group">
                 <button type="submit" class="btn btn-primary btn-block"> Login </button>
               </div> <!-- form-group// -->
+              <div class="form-group" id="my-signin2"></div>
             </form>
           </article>
 
         </div> <!-- card.// -->
+
+        <script>
+          function onSuccess(googleUser) {
+            console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
+          }
+          function onFailure(error) {
+            console.log(error);
+          }
+          function renderButton() {
+            gapi.signin2.render('my-signin2', {
+              'scope': 'profile email',
+              'width': 310,
+              'height': 40,
+              'longtitle': true,
+              'theme': 'dark',
+              'onsuccess': onSuccess,
+              'onfailure': onFailure
+            });
+          }
+        </script>
+        <script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
 </body>
 
 </html>

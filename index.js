@@ -52,7 +52,6 @@ db.once('open', function () {
   console.log('Connected to MongoDB');
 })
 
-
 // Need to use this to be able to use views folder
 app.use(express.static('views'));
 
