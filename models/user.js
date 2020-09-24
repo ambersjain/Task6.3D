@@ -73,7 +73,9 @@ const userSchema = mongoose.Schema({
                 throw new Error('Mobile number is not valid');
             }
         }
-    }
+    },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
   }
 )
 

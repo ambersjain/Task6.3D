@@ -10,12 +10,6 @@ const app = express();
 require('../config/passport-config');
 const passport = require('passport');
 
-// Nodemailer
-const nodeMailer = require("nodemailer");
-const async = require("async");
-const crypto = require("crypto");
-
-
 
 // User Model
 const User = require("../models/user");
@@ -47,19 +41,6 @@ router.get('/regFailed', (req, res) => {
 router.get('/welcome', (req, res) => {
   res.sendFile(`${base}/welcome.html`);
 });
-
-router.get('/forgot', (req, res) => {
-  res.sendFile(`${base}/forgotPassword.html`);
-});
-
-router.post('/forgot', (req, res) => {
-    
-});
-
-// 404 route
-// app.get('/*', (req, res) => {
-//   res.sendFile(`${base}/404.html`);
-// });
 
 // Signup
 router.post('/', (req, res) => {
@@ -110,11 +91,9 @@ router.post('/', (req, res) => {
         console.log(err);
         res.redirect(`/regFailed`);
       } else {
-
         console.log("Registration Successful!");
         res.redirect(`/regSuccess`);
         //Send email only after registration is successful
-
         const request = https.request(url, options, (response) => {
           response.on("data", (data) => {
             console.log(JSON.parse(data))
@@ -140,7 +119,6 @@ router.post('/signin', (req, res) => {
     }
     if (!user) {
       console.log("Email do not match");
-      res.redirect(`/*`);
       return res.status(404).send();
     }
     if (user) {
@@ -151,7 +129,7 @@ router.post('/signin', (req, res) => {
       } else {
         console.log("Wrong Password");
         // send them page not found error
-        res.redirect(`/*`);
+        res.redirect(`/signin`);
         return res.status(404).send();
       }
     }

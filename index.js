@@ -4,6 +4,12 @@ const app = express();
 const port = 8080;
 const session = require('express-session');
 
+//getting the passwordReset routes
+const passwordResetRoutes = require('./routes/passwordReset-router.js');
+
+//Using EJS engine to pass data from server to html
+app.set('view engine', 'ejs');
+
 //getting the worker routes
 const workerRoutes = require('./routes/worker-routes');
 
@@ -57,6 +63,9 @@ app.use(express.static('views'));
 
 // Use the worker routes
 app.use(workerRoutes);
+
+// Use the passwordReset routes
+app.use(passwordResetRoutes);
 
 // Use the user routes
 app.use(userRoutes);
