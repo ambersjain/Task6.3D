@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
-const port = 8080;
+const PORT = process.env.PORT || 8080;
 const session = require('express-session');
 
 //getting the passwordReset routes
@@ -39,13 +39,12 @@ app.use(passport.session());
 // Body parser middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
 // //Database connection using mongoose
 const mongoose = require("mongoose");
 // This keeps away the warning
 mongoose.set('useCreateIndex', true);
 // This craetes and connects to the db
-mongoose.connect("mongodb://localhost:27017/iCrowdTaskDB", { useNewUrlParser: true ,  useUnifiedTopology: true })
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/iCrowdTaskDB", { useNewUrlParser: true ,  useUnifiedTopology: true })
 let db = mongoose.connection;
 
 // Check for DB errors
@@ -73,6 +72,6 @@ app.use(userRoutes);
 // Use the profile routes
 app.use('/profile', profileRoutes);
 
-app.listen(port, () => {
-  console.log(`listening on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`listening on port ${PORT}`);
 });
