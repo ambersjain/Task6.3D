@@ -146,11 +146,10 @@ router.post('/signin', (req, res) => {
 })
 
 //logout
-router.get('/logout', (req, res) => {
-  res.send(`loggin out`);
+router.get('/signout', (req, res) => {
+  req.logout();
+  res.redirect('/signin')
 });
-
-
 
 // GET /google
 //   Use passport.authenticate() as route middleware to authenticate the

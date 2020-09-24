@@ -4,11 +4,6 @@ const app = express();
 const port = 8080;
 const session = require('express-session');
 
-// For Google Auth
-
-// const passport = require('passport');
-// const session = require('express-session');
-
 //getting the worker routes
 const workerRoutes = require('./routes/worker-routes');
 
@@ -20,7 +15,6 @@ const profileRoutes = require('./routes/profile-routes');
 
 const { EEXIST } = require('constants');
 const passport = require('passport');
-
 
 
 //use Google auth in app
