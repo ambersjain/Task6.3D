@@ -1,21 +1,51 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
-const validator = require('validator');
 const port = 8080;
-const base = `${__dirname}/views`;
-// To connect to API
-const https = require("https");
-//To hash the password
-const bcrypt = require('bcrypt');
+const session = require('express-session');
 
+//getting the passwordReset routes
+const passwordResetRoutes = require('./routes/passwordReset-router.js');
+
+//Using EJS engine to pass data from server to html
+app.set('view engine', 'ejs');
+
+//getting the worker routes
+const workerRoutes = require('./routes/worker-routes');
+
+//getting the user routes
+const userRoutes = require('./routes/user-routes');
+
+//getting the profile routes
+const profileRoutes = require('./routes/profile-routes');
+
+const { EEXIST } = require('constants');
+const passport = require('passport');
+
+
+//use Google auth in app
+/*
+ Set the session up for authentication, order is important
+*/
+app.use(session({
+  cookie:{maxAge:12000},
+  resave:false,
+  saveUninitialized:false,
+  secret:'secret'
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Body parser middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
 // //Database connection using mongoose
 const mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost:27017/iCrowdTaskDB", { useNewUrlParser: true })
+// This keeps away the warning
+mongoose.set('useCreateIndex', true);
+// This craetes and connects to the db
+mongoose.connect("mongodb://localhost:27017/iCrowdTaskDB", { useNewUrlParser: true ,  useUnifiedTopology: true })
 let db = mongoose.connection;
 
 // Check for DB errors
@@ -28,237 +58,20 @@ db.once('open', function () {
   console.log('Connected to MongoDB');
 })
 
-// User Model
-const User = require("./models/user");
-const { EEXIST } = require('constants');
-
-// Worker Model
-const Worker = require("./models/worker");
-
 // Need to use this to be able to use views folder
 app.use(express.static('views'));
 
-// Home route
-app.get('/', (req, res) => {
-  res.send(`${base}/index.html`);
-});
+// Use the worker routes
+app.use(workerRoutes);
 
-// Registration Successful route
-app.get('/regSuccess', (req, res) => {
-  res.sendFile(`${base}/regSuccess.html`);
-});
+// Use the passwordReset routes
+app.use(passwordResetRoutes);
 
-// Sign In route
-app.get('/signin', (req, res) => {
-  res.sendFile(`${base}/reqsignup.html`);
-});
+// Use the user routes
+app.use(userRoutes);
 
-// Registration Failed route
-app.get('/regFailed', (req, res) => {
-  res.sendFile(`${base}/regFailed.html`);
-});
-
-// Welcome route
-app.get('/welcome', (req, res) => {
-  res.sendFile(`${base}/welcome.html`);
-});
-
-
-// 404 route
-// app.get('/*', (req, res) => {
-//   res.sendFile(`${base}/404.html`);
-// });
-
-// Signup
-app.post('/', (req, res) => {
-
-  //hashing password before storing in db
-  const hashedPass = bcrypt.hashSync(req.body.password, 10);
-  const user = new User.User(
-    {
-      country: req.body.country,
-      first_name: req.body.first_name,
-      last_name: req.body.last_name,
-      email: req.body.email,
-      password: hashedPass,
-      address: req.body.address,
-      city: req.body.city,
-      state: req.body.state,
-      zip: req.body.zip,
-      mobile_number: req.body.mobile_number,
-    }
-  );
-
-  const data = {
-    members: [
-      {
-        email_address: req.body.email,
-        status: "subscribed",
-        merge_fields: {
-          FNAME: req.body.first_name,
-          LNAME: req.body.last_name
-        }
-      }
-    ]
-  }
-  //mailchimp only accepts JSON, need to convert it to JSON
-  var jsonData = JSON.stringify(data);
-
-  // MailChimp Stuff
-  const url = "https://us17.api.mailchimp.com/3.0/lists/53ca52654e"
-  const options = {
-    method: "POST",
-    auth: "jainamb:15fa9f9ee79b0f8ad5757bc003430bbd-us17"
-  }
-
-  //Saving info to database
-  if (req.body.password === req.body.confirm_password) {
-    user.save((err) => {
-      if ((err)) {
-        console.log(err);
-        res.redirect(`/regFailed`);
-      } else {
-
-        console.log("Registration Successful!");
-        res.redirect(`/regSuccess`);
-        //Send email only after registration is successful
-
-        const request = https.request(url, options, (response) => {
-          response.on("data", (data) => {
-            console.log(JSON.parse(data))
-          })
-        })
-        request.write(jsonData);
-        request.end();
-
-      }
-    })
-  }
-  else {
-    res.redirect(`/regFailed`);
-    throw new Error("Passwords do not match")
-  }
-});
-
-//Login
-app.post('/signin', (req, res) => {
-  User.User.findOne({ email: req.body.email }, (err, user) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).send();
-    }
-    if (!user) {
-      console.log("Email do not match");
-      res.redirect(`/*`);
-      return res.status(404).send();
-    }
-    if (user) {
-      if (bcrypt.compareSync(req.body.passwordlogin, user.password)) {
-        console.log("Welcome!, you are logged in")
-        res.redirect(`/welcome`);
-        return res.status(200).send();
-      } else {
-        console.log("Wrong Password");
-        // send them page not found error
-        res.redirect(`/*`);
-        return res.status(404).send();
-      }
-    }
-    return res.status(200).send();
-  })
-})
-
-
-/*
-    WORKER ROUTES
-*/
-
-
-/* USE GET, POST and DELETE TO
-  - Retrieve, add and remove workers respectively[URI: /workers]
-*/
-
-
-app.route('/workers')
-  .get((req, res) => {
-    Worker.Worker.find((err, workerList) => {
-      if (err) { res.send(err) }
-      else { res.send(workerList) }
-    })
-
-  })
-  .post((req, res) => {
-    const worker = new Worker.Worker({
-      id: req.body.id,
-      name: req.body.name,
-      email: req.body.email,
-      password: req.body.password,
-      address: req.body.address,
-      mobile_number: req.body.mobile_number,
-    });
-
-    worker.save((err) => {
-      if (err) { res.send(err); console.log("Unable to add the worker"); }
-      else { res.send("Worker Added Succesfully") }
-    })
-  })
-  .delete((req, res) => {
-    Worker.Worker.deleteMany((err) => {
-      if (err) { res.send(err) }
-      else { res.send("Successfully deleted all worker records!") }
-    })
-  });
-
-
-/* USE GET, PUT and DELETE TO
-  - Retrieve, update and remove a specific worker [URI: /workers/:id]
-*/
-
-/* USE PATCH TO
-  - Update specific worker’s address and mobile phone [URI: /workers/:id]
-  - Update a specific worker’s password [URI: /workers/:id]
-*/
-app.route('/workers/:id')
-  .get((req, res) => {
-    Worker.Worker.findOne({ id: req.params.id }, (err, foundWorker) => {
-      if (foundWorker) { res.send(foundWorker) }
-      else { res.send("Worker not found.") }
-    })
-  })
-  .put((req, res) => {
-    Worker.Worker.update(
-      { id: req.params.id },
-      {
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
-        address: req.body.address,
-        mobile_number: req.body.mobile_number
-      },
-      { overwrite: true },
-      (err) => {
-        if (err) { res.send(err) }
-        else { res.send("Successfully Updated!") }
-      }
-    )
-  })
-  .delete((req, res) => {
-    Worker.Worker.deleteOne({ id: req.params.id }, (err, foundWorker) => {
-      if (foundWorker) { res.send(foundWorker) }
-      else { res.send("Worker account not deleted") }
-    })
-  })
-  .patch((req, res) => {
-    Worker.Worker.update(
-      { id: req.params.id },
-      { $set: req.body },
-      { overwrite: true },
-      (err) => {
-        if (err) { res.send(err) }
-        else { res.send("Successfully Updated!") }
-      }
-    )
-  })
+// Use the profile routes
+app.use('/profile', profileRoutes);
 
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
