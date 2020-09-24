@@ -10,6 +10,13 @@ const app = express();
 require('../config/passport-config');
 const passport = require('passport');
 
+// Nodemailer
+const nodeMailer = require("nodemailer");
+const async = require("async");
+const crypto = require("crypto");
+
+
+
 // User Model
 const User = require("../models/user");
 
@@ -41,6 +48,13 @@ router.get('/welcome', (req, res) => {
   res.sendFile(`${base}/welcome.html`);
 });
 
+router.get('/forgot', (req, res) => {
+  res.sendFile(`${base}/forgotPassword.html`);
+});
+
+router.post('/forgot', (req, res) => {
+    
+});
 
 // 404 route
 // app.get('/*', (req, res) => {
@@ -157,7 +171,7 @@ router.get('/signout', (req, res) => {
 //   the user to google.com.  After authorization, Google will redirect the user
 //   back to this application at /auth/google/callback
 router.get('/google',
-  passport.authenticate('google', { scope: ['profile']}));
+  passport.authenticate('google', { scope: ['profile', 'email']}));
 
 // GET /google/callback
 //   Use passport.authenticate() as route middleware to authenticate the

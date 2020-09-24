@@ -21,18 +21,6 @@ const userSchema = mongoose.Schema({
         minlength: 1,
         maxlength: 50
     },
-    email: {
-        type: String,
-        minlength: 1,
-        maxlength: 255,
-        trim:true,
-        lowercase:true,
-        validate(value) {
-            if (!validator.isEmail(value)) {
-                throw new Error('Email is not valid');
-            }
-        }
-    },
     password: {
         type: String,
         minlength: 8,
@@ -64,7 +52,8 @@ const userSchema = mongoose.Schema({
         }
     },
     username: String,
-    googleId: String
+    googleId: String,
+    email: String,
   }
 )
 

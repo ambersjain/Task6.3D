@@ -35,7 +35,8 @@ passport.use(new GoogleStrategy({
         } else {
             new googleUser({
                 username: profile.displayName,
-                googleId: profile.id
+                googleId: profile.id,
+                email: profile._json.email
             }).save().then((newUser) => {
                 console.log('new user created:' + newUser)
                 // This done method is passed on to deserialize

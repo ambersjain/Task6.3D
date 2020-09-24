@@ -1,9 +1,4 @@
 const router = require('express').Router();
-const path = require('path');
-const base = path.join(__dirname, '../views');
-
-// Need to use this to be able to use views folder
-
 
 //Check if user is logged in
 const authCheck = (req, res, next) => {

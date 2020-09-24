@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "async": "^3.2.0",
     "bcrypt": "^5.0.0",
     "cookie-session": "^1.4.0",
     "ejs": "^3.1.5",
@@ -16,6 +17,7 @@
     "express-session": "^1.17.1",
     "latest": "^0.2.0",
     "mongoose": "^5.10.5",
+    "nodemailer": "^6.4.11",
     "nodemon": "^2.0.4",
     "passport": "^0.4.1",
     "passport-google-oauth": "^2.0.0",
