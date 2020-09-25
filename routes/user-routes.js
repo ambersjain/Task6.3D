@@ -62,28 +62,6 @@ router.post('/', (req, res) => {
     }
   );
 
-  const data = {
-    members: [
-      {
-        email_address: req.body.email,
-        status: "subscribed",
-        merge_fields: {
-          FNAME: req.body.first_name,
-          LNAME: req.body.last_name
-        }
-      }
-    ]
-  }
-  //mailchimp only accepts JSON, need to convert it to JSON
-  var jsonData = JSON.stringify(data);
-
-  // MailChimp Stuff
-  const url = "https://us17.api.mailchimp.com/3.0/lists/53ca52654e"
-  const options = {
-    method: "POST",
-    auth: "jainamb:15fa9f9ee79b0f8ad5757bc003430bbd-us17"
-  }
-
   //Saving info to database
   if (req.body.password === req.body.confirm_password) {
     user.save((err) => {
@@ -93,14 +71,6 @@ router.post('/', (req, res) => {
       } else {
         console.log("Registration Successful!");
         res.redirect(`/regSuccess`);
-        //Send email only after registration is successful
-        const request = https.request(url, options, (response) => {
-          response.on("data", (data) => {
-            console.log(JSON.parse(data))
-          })
-        })
-        request.write(jsonData);
-        request.end();
       }
     })
   }

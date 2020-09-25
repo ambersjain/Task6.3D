@@ -42,6 +42,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // atlas details
 // amberjain1234
 // 'mongodbcloudpass'
+// Use this when not connected to Heroku
 const MONGODB_URI = "mongodb+srv://amberjain1234:mongodbcloudpass@icrowdtaskdb.t8nty.mongodb.net/<dbname>?retryWrites=true&w=majority"
 
 // //Database connection using mongoose
