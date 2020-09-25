@@ -9,10 +9,18 @@ const router = require('express').Router();
 const app = express();
 require('../config/passport-config');
 const passport = require('passport');
-
+const LocalStrategy = require('passport-local').Strategy;
 
 // User Model
 const User = require("../models/user");
+
+
+// Authentication cookie stuff
+//passport.use(new LocalStrategy(User.authenticate()));
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 
 // Need to use this to be able to use views folder
 app.use(express.static('views'));
@@ -39,7 +47,13 @@ router.get('/regFailed', (req, res) => {
 
 // Welcome route
 router.get('/welcome', (req, res) => {
-  res.sendFile(`${base}/welcome.html`);
+  //only show this if request is authenticated
+  if (req.isAuthenticated()) {
+    res.sendFile(`${base}/welcome.html`);
+  } else {
+    console.log("Plese login again");
+    res.redirect('/signin');
+  }
 });
 
 // Signup
@@ -82,23 +96,27 @@ router.post('/', (req, res) => {
 
 //Login
 router.post('/signin', (req, res) => {
-  User.findOne({ email: req.body.email }, (err, user) => {
+  User.findOne({ email: req.body.username }, (err, user) => {
     if (err) {
       console.log(err);
       return res.status(500).send();
     }
     if (!user) {
-      console.log("Email do not match");
-      return res.status(404).send();
+      console.log("Email does not exist");
+      res.json({message:'Email does not exist!!!'})
     }
     if (user) {
-      if (bcrypt.compareSync(req.body.passwordlogin, user.password)) {
-        console.log("Welcome!, you are logged in")
-        res.redirect(`/welcome`);
+      if (bcrypt.compareSync(req.body.password, user.password)) {
+        //Cookie authentication
+        //passport.authenticate('local', { successRedirect: '/welcome', failureRedirect: '/signin', })(req, res);
+        console.log("PASSWORDS MATCH");
+        passport.authenticate('local')(req, res, ()=>{
+          res.redirect(`/welcome`);
+          console.log("Welcome!, you are logged in");
+        });
         return res.status(200).send();
       } else {
         console.log("Wrong Password");
-        // send them page not found error
         res.redirect(`/signin`);
         return res.status(404).send();
       }
@@ -110,7 +128,9 @@ router.post('/signin', (req, res) => {
 //logout
 router.get('/signout', (req, res) => {
   req.logout();
-  res.redirect('/signin')
+  req.session.destroy((err) => {
+    res.redirect('/signin');
+  });
 });
 
 // GET /google
@@ -119,7 +139,7 @@ router.get('/signout', (req, res) => {
 //   the user to google.com.  After authorization, Google will redirect the user
 //   back to this application at /auth/google/callback
 router.get('/google',
-  passport.authenticate('google', { scope: ['profile', 'email']}));
+  passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 // GET /google/callback
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -128,7 +148,7 @@ router.get('/google',
 //   which, in this example, will redirect the user to the home page.
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/signin' }),
-  function(req, res) {
+  function (req, res) {
     res.redirect('/profile');
   });
 

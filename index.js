@@ -22,22 +22,26 @@ const profileRoutes = require('./routes/profile-routes');
 const { EEXIST } = require('constants');
 const passport = require('passport');
 
+// Body parser middleware
+app.use(bodyParser.urlencoded({ extended: true }));
 
 //use Google auth in app
 /*
  Set the session up for authentication, order is important
 */
 app.use(session({
-  cookie:{maxAge:12000},
-  resave:false,
-  saveUninitialized:false,
-  secret:'secret'
+  name: 'randomambercookie',
+  cookie: {
+    maxAge: 1000 * 60 * 60, samesite: true,
+  },
+  resave: false,
+  saveUninitialized: false,
+  secret: 'randomcookiesecret'
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Body parser middleware
-app.use(bodyParser.urlencoded({ extended: true }));
+
 
 // atlas details
 // amberjain1234
@@ -50,7 +54,7 @@ const mongoose = require("mongoose");
 // This keeps away the warning
 mongoose.set('useCreateIndex', true);
 // This craetes and connects to the db
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/iCrowdTaskDB", { useNewUrlParser: true ,  useUnifiedTopology: true })
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/iCrowdTaskDB", { useNewUrlParser: true, useUnifiedTopology: true })
 
 let db = mongoose.connection;
 

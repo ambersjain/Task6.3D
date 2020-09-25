@@ -30,16 +30,16 @@
             <form method='POST' action='/signin'>
               <div class="form-group">
                 <label>Your email</label>
-                <input name="email" class="form-control" placeholder="Email" type="email">
+                <input name="username" class="form-control" placeholder="Email" type="email">
               </div> <!-- form-group// -->
               <div class="form-group">
                 <a class="float-right" href="/forgot">Forgot?</a>
                 <label>Your password</label>
-                <input name="passwordlogin" class="form-control" placeholder="******" type="password">
+                <input name="password" class="form-control" placeholder="******" type="password">
               </div> <!-- form-group// -->
               <div class="form-group">
                 <div class="checkbox">
-                  <label> <input type="checkbox"> Save password </label>
+                  <label> <input name="savePass" type="checkbox"> Save password </label>
                 </div> <!-- checkbox .// -->
               </div> <!-- form-group// -->
               <div class="form-group">
@@ -59,18 +59,6 @@
           </article>
 
         </div> <!-- card.// -->
-<!-- 
-        <script>
-          function renderButton() {
-            gapi.signin2.render('my-signin2', {
-              'width': 310,
-              'height': 40,
-              'longtitle': true,
-              'theme': 'dark',
-            });
-          }
-        </script>
-        <script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script> -->
 </body>
 
 </html>
