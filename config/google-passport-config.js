@@ -22,7 +22,7 @@ passport.serializeUser(function(user, done) {
 passport.use(new GoogleStrategy({
     clientID: "963340836091-dna5cn6bfd8houn2qt2ohnehouc4q4vb.apps.googleusercontent.com",
     clientSecret: "lRqTBggyl61U4ImIiN41VqVL",
-    callbackURL: "http://127.0.0.1:8080/google/callback"
+    callbackURL: "http://127.0.0.1:8080/google/callback" || "http://icrowdapp.herokuapp.com/google/callback"
   },
   function(token, tokenSecret, profile, done) {
       // passport callback function
@@ -46,3 +46,5 @@ passport.use(new GoogleStrategy({
     });
   }
 ));
+
+module.exports = passport;

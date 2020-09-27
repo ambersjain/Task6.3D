@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const validator = require('validator');
-const passportLocalMongoose = require('passport-local-mongoose');
 
 // User schema
 
@@ -79,8 +78,6 @@ const userSchema = mongoose.Schema({
   }
 )
 
-//plugin
-userSchema.plugin(passportLocalMongoose);
-
 //Defining a model
-module.exports = mongoose.model('User', userSchema)
+//module.exports = mongoose.model('User', userSchema)
+module.exports = mongoose.model('Users', userSchema);

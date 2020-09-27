@@ -7,20 +7,10 @@ const https = require("https");
 const bcrypt = require('bcrypt');
 const router = require('express').Router();
 const app = express();
-require('../config/passport-config');
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 
 // User Model
 const User = require("../models/user");
-
-
-// Authentication cookie stuff
-//passport.use(new LocalStrategy(User.authenticate()));
-passport.use(User.createStrategy());
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
-
 
 // Need to use this to be able to use views folder
 app.use(express.static('views'));
@@ -51,7 +41,7 @@ router.get('/welcome', (req, res) => {
   if (req.isAuthenticated()) {
     res.sendFile(`${base}/welcome.html`);
   } else {
-    console.log("Plese login again");
+    console.log("Please login again");
     res.redirect('/signin');
   }
 });
@@ -78,6 +68,7 @@ router.post('/', (req, res) => {
 
   //Saving info to database
   if (req.body.password === req.body.confirm_password) {
+
     user.save((err) => {
       if ((err)) {
         console.log(err);
@@ -94,35 +85,19 @@ router.post('/', (req, res) => {
   }
 });
 
-//Login
-router.post('/signin', (req, res) => {
-  User.findOne({ email: req.body.username }, (err, user) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).send();
-    }
-    if (!user) {
-      console.log("Email does not exist");
-      res.json({message:'Email does not exist!!!'})
-    }
-    if (user) {
-      if (bcrypt.compareSync(req.body.password, user.password)) {
-        //Cookie authentication
-        //passport.authenticate('local', { successRedirect: '/welcome', failureRedirect: '/signin', })(req, res);
-        console.log("PASSWORDS MATCH");
-        passport.authenticate('local')(req, res, ()=>{
-          res.redirect(`/welcome`);
-          console.log("Welcome!, you are logged in");
-        });
-        return res.status(200).send();
-      } else {
-        console.log("Wrong Password");
-        res.redirect(`/signin`);
-        return res.status(404).send();
-      }
-    }
-    return res.status(200).send();
-  })
+// Login post request
+router.post('/signin', passport.authenticate('local', {
+	failureRedirect: '/signin',
+	failureFlash: true
+}), (req, res) => {
+
+	// Set up the max age of cookie
+	if ( req.body.rememberme ) {
+		req.session.cookie.originalMaxAge = 24 * 60 * 60 * 1000 // Expires in 1 day
+	} else {
+		req.session.cookie.expires = false
+	}
+	res.redirect('/welcome')
 })
 
 //logout

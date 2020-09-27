@@ -2,7 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 8080;
+//const passport = require('passport');
+//const localPassportConfig = require('./config/local-passport-config');
+const googlePassportConfig = require('./config/google-passport-config');
+
 const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
+const cookieParser = require('cookie-parser');
 
 //getting the passwordReset routes
 const passwordResetRoutes = require('./routes/passwordReset-router.js');
@@ -20,27 +26,6 @@ const userRoutes = require('./routes/user-routes');
 const profileRoutes = require('./routes/profile-routes');
 
 const { EEXIST } = require('constants');
-const passport = require('passport');
-
-// Body parser middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-
-//use Google auth in app
-/*
- Set the session up for authentication, order is important
-*/
-app.use(session({
-  name: 'randomambercookie',
-  cookie: {
-    maxAge: 1000 * 60 * 60, samesite: true,
-  },
-  resave: false,
-  saveUninitialized: false,
-  secret: 'randomcookiesecret'
-}));
-app.use(passport.initialize());
-app.use(passport.session());
-
 
 
 // atlas details
@@ -67,6 +52,28 @@ db.on('error', function (err) {
 db.once('open', function () {
   console.log('Connected to MongoDB');
 })
+
+// Body parser middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+
+//use Google auth in app
+/*
+ Set the session up for authentication, order is important
+*/
+app.use(cookieParser())
+app.use(session({
+  name: 'randomsignincookie',
+  resave: false,
+  saveUninitialized: false,
+  secret: 'randomcookiesecret',
+  store: new MongoStore({ mongooseConnection: mongoose.connection })
+}));
+// app.use(localPassportConfig.initialize());
+// app.use(localPassportConfig.session());
+
+app.use(googlePassportConfig.initialize());
+app.use(googlePassportConfig.session());
+
 
 // Need to use this to be able to use views folder
 app.use(express.static('views'));
