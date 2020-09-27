@@ -4,7 +4,7 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 //const passport = require('passport');
 //const localPassportConfig = require('./config/local-passport-config');
-const googlePassportConfig = require('./config/google-passport-config');
+const passportConfig = require('./config/passport-config');
 
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
@@ -71,8 +71,8 @@ app.use(session({
 // app.use(localPassportConfig.initialize());
 // app.use(localPassportConfig.session());
 
-app.use(googlePassportConfig.initialize());
-app.use(googlePassportConfig.session());
+app.use(passportConfig.initialize());
+app.use(passportConfig.session());
 
 
 // Need to use this to be able to use views folder

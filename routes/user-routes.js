@@ -7,7 +7,7 @@ const https = require("https");
 const bcrypt = require('bcrypt');
 const router = require('express').Router();
 const app = express();
-const passport = require('passport');
+const passport = require('../config/passport-config');
 
 // User Model
 const User = require("../models/user");
@@ -87,17 +87,16 @@ router.post('/', (req, res) => {
 
 // Login post request
 router.post('/signin', passport.authenticate('local', {
-	failureRedirect: '/signin',
-	failureFlash: true
+  failureRedirect: '/signin'
 }), (req, res) => {
 
-	// Set up the max age of cookie
-	if ( req.body.rememberme ) {
-		req.session.cookie.originalMaxAge = 24 * 60 * 60 * 1000 // Expires in 1 day
-	} else {
-		req.session.cookie.expires = false
-	}
-	res.redirect('/welcome')
+  // Set up the max age of cookie
+  if (req.body.rememberme) {
+    req.session.cookie.originalMaxAge = 24 * 60 * 60 * 1000 // Expires in 1 day
+  } else {
+    req.session.cookie.expires = false
+  }
+  res.redirect('/welcome')
 })
 
 //logout
